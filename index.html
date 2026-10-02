@@ -1,18 +1,44 @@
 <!DOCTYPE html>
-<html lang="en-AU"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
 <title>Steady Day</title>
 <style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-background:#0a0a0c;color:#e8eaed;font-family:system-ui,sans-serif;padding:24px;text-align:center}
-a{color:#5eb8b0}
-.card{max-width:420px;border:1px solid #222;border-radius:16px;padding:28px;background:#12141a}
-h1{font-size:1.6rem;margin:0 0 12px}
-p{color:#9aa0a6;line-height:1.5;margin:10px 0}
-</style></head><body>
-<div class="card">
-<h1>Steady Day</h1>
-<p>Open the full app in <strong>Chrome</strong> — not a chat HTML preview (buttons won’t work there).</p>
-<p>Use the latest <code>diabetes-companion.html</code> from Chief of Staff, or your Google Drive copy <strong>Steady-Day.html</strong>.</p>
-<p>Pick Type 1 or Type 2 → Continue → teal path hero on Today.</p>
-</div></body></html>
+body{margin:0;background:#0a0a0c;color:#9aa0a6;font-family:system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.box{text-align:center;padding:24px;max-width:360px}
+</style>
+</head>
+<body>
+<div class="box" id="boot">Loading Steady Day…</div>
+<script>
+(async function () {
+  var n = 3;
+  var parts = [];
+  try {
+    for (var i = 0; i < n; i++) {
+      var res = await fetch('p' + i + '.txt', { cache: 'no-store' });
+      if (!res.ok) throw new Error('part ' + i);
+      parts.push(await res.text());
+    }
+    var b64 = parts.join('');
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+    var ds = new DecompressionStream('gzip');
+    var stream = new Response(bytes).body.pipeThrough(ds);
+    var html = await new Response(stream).text();
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    document.getElementById('boot').innerHTML =
+      '<p><strong style="color:#e8eaed">Could not load Steady Day</strong></p>' +
+      '<p>Open this page in Chrome (GitHub Pages HTTPS), not a chat preview.</p>' +
+      '<p style="font-size:12px">' + (e && e.message ? e.message : e) + '</p>';
+  }
+})();
+</script>
+</body>
+</html>
